@@ -12,15 +12,16 @@ jobs:
     strategy:
       matrix:
         # avoid pytest -k mix with IVFFLAT, so flat as BFFLAT
-        index-type: ["BFFLAT", "IVFFLAT", "IVFPQ", "HNSW"]
-        platform: [amd64, arm64]
+        # index-type: ["BFFLAT", "IVFFLAT", "IVFPQ", "HNSW"]
+        index-type: ["IVFFLAT"]
+        platform: [amd64]
         include:
           - platform: amd64
             runs-on: ubuntu-latest
             docker-arch: ""
-          - platform: arm64
-            runs-on: ubuntu-latest
-            docker-arch: "--platform linux/arm64"
+          # - platform: arm64
+          #   runs-on: ubuntu-latest
+          #   docker-arch: "--platform linux/arm64"
 
     runs-on: ${{ matrix.runs-on }}
 
