@@ -44,9 +44,7 @@ jobs:
         docker build ${{ matrix.docker-arch }} -t vearch/vearch:latest .
         cp ../config/config_cluster.toml .
         sed -i 's/resource_limit_rate = 0.85/resource_limit_rate = 0.98/' config_cluster.toml
-        if [ "${{ matrix.docker-arch }}" == "--platform linux/arm64" ]; then
-          echo "    rpc_timeout = 500" >> config.toml
-        fi
+        echo "    rpc_timeout = 500" >> config.toml
         docker rm vearch-dev
         docker rmi vearch/vearch-dev-env:latest
 
