@@ -37,21 +37,21 @@ if [[ ! -f "/usr/local/lib64/libroaring.a" ]]; then
 fi
 
 if [[ ! -f "/usr/local/lib64/libfaiss.a" ]]; then
-    wget -q https://github.com/facebookresearch/faiss/archive/refs/tags/v1.7.1.tar.gz
-    tar xf v1.7.1.tar.gz
-    pushd faiss-1.7.1
+    wget -q https://github.com/facebookresearch/faiss/archive/refs/tags/v1.10.0.tar.gz
+    tar xf v1.10.0.tar.gz
+    pushd faiss-1.10.0
     if [ -z $MKLROOT ]; then
         OS_NAME=$(uname)
         ARCH=$(arch)
         if [ ${OS_NAME} == "Darwin" ]; then
             cmake -DFAISS_ENABLE_GPU=OFF -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include" -DOpenMP_CXX_LIB_NAMES="libomp" -DOpenMP_libomp_LIBRARY="/usr/local/opt/libomp/lib" -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFAISS_OPT_LEVEL=avx2 -B build .
         elif [ ${ARCH} == "aarch64" -o ${ARCH} == "AARCH64" ]; then
-            cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -B build .
+            cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$FAISS_HOME -B build .
         else
-            cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFAISS_OPT_LEVEL=avx2 -B build .
+            cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFAISS_OPT_LEVEL=avx512 -D CMAKE_INSTALL_PREFIX=$FAISS_HOME -B build .
         fi
     else
-        cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFAISS_OPT_LEVEL=avx2 -DBLA_VENDOR=Intel10_64_dyn -DMKL_LIBRARIES=$MKLROOT/lib/intel64 -B build .
+        cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DFAISS_OPT_LEVEL=avx512 -D CMAKE_INSTALL_PREFIX=$FAISS_HOME -DBLA_VENDOR=Intel10_64_dyn -DMKL_LIBRARIES=$MKLROOT/lib/intel64 -B build .
     fi
 
     make -C build faiss && make -C build install
