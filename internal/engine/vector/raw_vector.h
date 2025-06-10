@@ -148,7 +148,7 @@ class RawVector : public VectorReader {
   // [start_vid, end_vid)
   virtual Status Dump(int64_t start_vid, int64_t end_vid) = 0;
   virtual int GetDiskVecNum(int64_t &vec_num) = 0;
-  virtual Status Load(int64_t vec_num) = 0;
+  virtual Status Load(int64_t vec_num, int64_t &disk_vec_num) = 0;
 
   bool WithIO() { return meta_info_->with_io_; }
 

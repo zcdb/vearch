@@ -9,6 +9,7 @@
 
 #include "raw_vector_factory.h"
 #include "util/utils.h"
+#include "index/impl/hnswlib/gamma_index_hnswlib.h"
 
 namespace vearch {
 
@@ -862,23 +863,56 @@ int VectorManager::Load(const std::vector<std::string> &index_dirs,
   }
 
   LOG(INFO) << desc_ << "vector_mgr load min_vec_num=" << min_vec_num;
-
+  std::unordered_map<std::string, bool> vecs_has_delete;
   for (const auto &[name, vec] : raw_vectors_) {
     if (vec->WithIO()) {
       // TODO: doc num to vector num
       int64_t vec_num = doc_num;
-      Status status = vec->Load(vec_num);
+      int64_t real_load_num = 0;
+      Status status = vec->Load(vec_num, real_load_num);
       if (!status.ok()) {
         LOG(ERROR) << desc_ << "vector [" << name << "] load failed!";
         return status.code();
       }
-      LOG(INFO) << desc_ << "vector [" << name << "] load success!";
+      LOG(INFO) << desc_ << "vector [" << name << "] load success, vec_num="
+                << vec_num << ", real_load_num=" << real_load_num;
+      if (real_load_num < vec_num) {
+        vecs_has_delete[name] = true;
+      } else if (real_load_num == vec_num) {
+        vecs_has_delete[name] = false;
+      } else {
+        LOG(ERROR) << desc_ << "vector [" << name
+                   << "] load num=" << real_load_num
+                   << " >= vec_num=" << vec_num;
+        return -1;
+      }
     }
   }
 
   if (index_dirs.size() > 0) {
     for (const auto &[name, index] : vector_indexes_) {
       int64_t load_num = 0;
+      GammaFLATIndex* flat_index = dynamic_cast<GammaFLATIndex*>(index);
+      if (flat_index != nullptr) {
+        GammaIndexHNSWLIB* hnsw_index = dynamic_cast<GammaIndexHNSWLIB*>(flat_index);
+        if (hnsw_index != nullptr) {
+          std::string vec_name, index_type;
+          GetVectorNameAndIndexType(name, vec_name, index_type);
+          if (vecs_has_delete.find(vec_name) != vecs_has_delete.end()) {
+            if (vecs_has_delete[vec_name]) {
+              LOG(INFO) << desc_ << "vector index [" << name
+                       << "] has delete, skip load index";
+              continue;
+            }
+          } else {
+            LOG(ERROR) << desc_ << "vector index [" << name
+                       << "] not found in raw_vectors, vec_name="
+                       << vec_name << ", index_type=" << index_type;
+            return -1;
+          }
+        }
+      }
+
       Status status = index->Load(index_dirs[0], load_num);
       if (!status.ok()) {
         LOG(ERROR) << desc_ << "vector [" << name << "] load index " << index_dirs[0]

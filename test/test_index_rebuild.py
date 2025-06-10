@@ -338,7 +338,7 @@ class TestIndexRebuildWithDelete:
         }
 
         response = create_space(router_url, db_name, space_config)
-        logger.info(response)
+        logger.info(response.json())
 
         # do 3 times
         for i in range(3):
