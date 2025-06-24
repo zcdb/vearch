@@ -77,7 +77,7 @@ def process_add_data(items):
 
     rs = requests.post(url, auth=(username, password), json=data)
     if rs.json()["code"] != 0:
-        logger.info(rs.json())
+        logger.error(rs.json())
 
     assert rs.json()["code"] == 0
 
