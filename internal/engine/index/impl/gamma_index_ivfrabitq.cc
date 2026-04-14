@@ -619,14 +619,6 @@ void GammaIVFRABITQIndex::search_preassigned(RetrievalContext *retrieval_context
     del_params.set(retrieval_params);
   }
 
-  faiss::MetricType metric_type;
-  if (retrieval_params->GetDistanceComputeType() ==
-      DistanceComputeType::INNER_PRODUCT) {
-    metric_type = faiss::METRIC_INNER_PRODUCT;
-  } else {
-    metric_type = faiss::METRIC_L2;
-  }
-
   long max_codes = 1000000000;
   size_t ndis = 0;
 
