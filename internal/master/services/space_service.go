@@ -56,7 +56,7 @@ func NewSpaceService(client *client.Client) *SpaceService {
 	return &SpaceService{client: client}
 }
 
-func (s *SpaceService) CreateSpace(ctx context.Context, dbs *DBService, dbName string, space *entity.Space) (err error) {
+func (s *SpaceService) CreateSpace(ctx context.Context, dbs *DBService, dbName string, space *entity.Space, isRestore bool) (err error) {
 	masterClient := s.client.Master()
 	if space.DBId, err = masterClient.QueryDBName2ID(ctx, dbName); err != nil {
 		log.Error("find DbId according to DbName:%v failed, error: %v", dbName, err)
@@ -115,8 +115,10 @@ func (s *SpaceService) CreateSpace(ctx context.Context, dbs *DBService, dbName s
 	space.SpaceProperties = spaceProperties
 
 	// Merge indexes definitions with field-level index info
-	if err := entity.MergeFieldIndexes(spaceProperties, &space.Indexes); err != nil {
-		return err
+	if !isRestore || (isRestore && len(space.Indexes) == 0) {
+		if err := entity.MergeFieldIndexes(spaceProperties, &space.Indexes); err != nil {
+			return err
+		}
 	}
 
 	// Validate that at least one vector index is defined

@@ -675,7 +675,7 @@ func (ca *clusterAPI) createSpace(c *gin.Context) {
 
 	space.Version = 1 // first start with 1
 
-	if err := ca.masterService.Space().CreateSpace(c, ca.masterService.DB(), dbName, space); err != nil {
+	if err := ca.masterService.Space().CreateSpace(c, ca.masterService.DB(), dbName, space, false); err != nil {
 		log.Error("createSpace db: %s, space: %s, space id: %d, err: %s", dbName, space.Name, space.Id, err.Error())
 		httpCode = ca.handleError(c, err)
 		return
