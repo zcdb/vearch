@@ -108,7 +108,7 @@ class TestBackup:
 
         url = router_url + "/backup/dbs/" + self.db_name + "/spaces/" + self.space_name + "?timeout=100000"
         response = requests.post(url, auth=(username, password), json=data)
-
+        logger.info(response.json())
         assert response.json()["code"] == 0
         result = response.json()["data"]
         version_id = result.get("version_id")
